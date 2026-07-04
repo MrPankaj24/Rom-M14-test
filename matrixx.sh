@@ -5,6 +5,7 @@ echo " 1. NUKING OLD CACHE (Fixing Repo/Hook Clashes) "
 echo "=========================================================="
 # This forcefully deletes the old LineageOS cache so Matrixx can sync cleanly
 rm -rf * .repo*
+rm -rf .repo/local_manifests/
 
 echo "=========================================================="
 echo " 2. INITIALIZING PROJECT MATRIXX (Android 16.2) "
