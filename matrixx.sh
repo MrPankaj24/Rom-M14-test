@@ -14,7 +14,7 @@ git clone https://github.com/MrPankaj24/local_manifests -b lineage-23.2 .repo/lo
 
 # 5. Set your custom identity signatures
 export BUILD_USERNAME="MrPankaj24"
-export BUILD_HOSTNAME="Arch-Hyprland"
+export BUILD_HOSTNAME="MrPankaj24"
 export TZ="Asia/Kolkata"
 
 # 6. Initialize build environment
