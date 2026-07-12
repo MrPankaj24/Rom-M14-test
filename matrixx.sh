@@ -2,17 +2,25 @@
 set -e
 
 echo "=========================================================="
-echo " 1. CLEANING PREVIOUS BUILD ARTIFACTS AND LOCAL MANIFESTS "
+echo " 1. CLEANING PREVIOUS ARTIFACTS AND CONFLICTING HOOKS "
 echo "=========================================================="
 rm -rf out/
 rm -rf .repo/local_manifests/
 rm -rf .repo/local_manifest.xml
 
+echo "Set github account.."
+git config --global user.name "MrPankaj24"
+git config --global user.email "surendersingh54275@gmail.com"
+
+
+# Safely delete leftover git hooks from ID 72 so repo init won't crash on signature checks
+find .repo/ -name "hooks" -type d -exec rm -rf {} + 2>/dev/null || true
+
 echo "=========================================================="
 echo " 2. SWITCHING MANIFEST TO PROJECT MATRIXX (Android 16.2) "
 echo "=========================================================="
-# Added --ignore-hooks to allow switching manifest without validation crashes
-repo init -u https://github.com/ProjectMatrixx/android.git -b 16.2 --git-lfs --depth=1 --ignore-hooks
+# Removed the illegal --ignore-hooks flag that caused the returned 2 error
+repo init -u https://github.com/ProjectMatrixx/android.git -b 16.2 --git-lfs --depth=1
 
 echo "=========================================================="
 echo " 3. CLONING DEVICE LOCAL MANIFESTS "
@@ -20,13 +28,14 @@ echo "=========================================================="
 git clone https://github.com/MrPankaj24/local_manifests -b lineage-23.2 .repo/local_manifests
 
 echo "=========================================================="
-echo " 4. SYNCING SOURCE CODE AND FIXING HOOKS INTERNALLY "
+echo " 4. SYNCING SOURCE CODE VIA CRAVE RESYNC "
 echo "=========================================================="
-# Force repo to override conflicting hook paths before running the main sync script
-repo sync -d --force-sync --ignore-hooks || true
-
-# Now call the optimized Crave resync utility to pull remaining components over the cache
-/opt/crave/resync.sh
+# Use Crave's internal resync script to rapidly pull changes over the cloud cache
+if [ -f /opt/crave/resync.sh ]; then
+    /opt/crave/resync.sh
+else
+    repo sync -c -j$(nproc --all) --force-sync --no-clone-bundle --no-tags
+fi
 
 echo "=========================================================="
 echo " 5. SETTING UP ENVIRONMENT & MAINTAINER INFO "
@@ -42,4 +51,4 @@ echo "=========================================================="
 echo " 6. STARTING COMPILATION "
 echo "=========================================================="
 make installclean
-m bacon
+mka bacon -j$(nproc --all)
